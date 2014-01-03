@@ -8,13 +8,14 @@ define([
   'dojo/on',
   'dojo/Deferred',
   'dojo/Evented',
+  'dojo/dom',
   'dojo/dom-construct',
   'dojo/dom-class'
 ], function(
   require,
   declare, lang, arrayUtil,
   on, Deferred, Evented,
-  domConstruct, domClass
+  dom, domConstruct, domClass
 ) {
   'use strict';
 
@@ -32,7 +33,7 @@ define([
     if (domTarget === document.body) {
       return domTarget;
     } else {
-      return document.getElementById(domTarget);
+      return dom.byId(domTarget);
     }
   }
 
@@ -106,7 +107,9 @@ define([
      */
     _loader: function(item) {
       this._widgetLoader(item).then(lang.hitch(this, function(map) {
-        on.once(map, 'map-ready', lang.hitch(this, function(params) {
+        var handle;
+        handle = on.once(map, 'map-ready', lang.hitch(this, function(params) {
+          handle.remove();
           if (this.widgets.length > 0) {
             for (var i = 0, widget; (widget = this.widgets[i]); i++) {
               widget.options = widget.options || {};
@@ -155,14 +158,17 @@ define([
     _requireWidget: function(widget) {
       var deferred = new Deferred();
       require([widget.path], function(Widget) {
-        var node;
+        var node
+          , handle
+          , w;
         if (!!widget.node) {
           node = domNode(widget);
           domConstruct.place(node, targetElem(target(widget)));
         }
-        var w = new Widget(widget.options, node);
+        w = new Widget(widget.options, node);
         deferred.resolve(w);
-        on.once(w, 'load', function() {
+        handle = on.once(w, 'load', function() {
+          handle.remove();
           if (widget.nodeVisible === false) {
             domClass.add(w.domNode, 'hidden');
           }
