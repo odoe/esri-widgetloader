@@ -63,7 +63,7 @@ define([
 
     constructor: function(options) {
       this.options = options || {};
-      this.widgets = arrayUtils.filter(this.options.widget, function(w) {
+      this.widgets = arrayUtils.filter(this.options.widgets, function(w) {
         if (w.hasOwnProperty('enabled')) {
           return w.enabled;
         } else {
