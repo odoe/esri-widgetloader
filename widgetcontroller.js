@@ -13,7 +13,7 @@ define([
   'dojo/dom-class'
 ], function(
   require,
-  declare, lang, arrayUtil,
+  declare, lang, arrayUtils,
   on, Deferred, Evented,
   dom, domConstruct, domClass
 ) {
@@ -63,7 +63,13 @@ define([
 
     constructor: function(options) {
       this.options = options || {};
-      this.widgets = this.options.widgets;
+      this.widgets = arrayUtils.filter(this.options.widget, function(w) {
+        if (w.hasOwnProperty('enabled')) {
+          return w.enabled;
+        } else {
+          return true;
+        }
+      });
     },
 
     /**
@@ -77,7 +83,7 @@ define([
       this.widgets = this._preload().array;
       var plucked = pluck('map', this.widgets);
       this.widgets = plucked.array;
-      arrayUtil.forEach(plucked.targets, this._loader, this);
+      arrayUtils.forEach(plucked.targets, this._loader, this);
     },
 
     /** private methods **/
