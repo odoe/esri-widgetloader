@@ -65,7 +65,7 @@ define([
       this.options = options || {};
       this.widgets = arrayUtils.filter(this.options.widgets, function(w) {
         if (w.hasOwnProperty('enabled')) {
-          return w.enabled;
+          return (w.enabled.toString() === 'true');
         } else {
           return true;
         }
