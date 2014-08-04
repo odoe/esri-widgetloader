@@ -10,14 +10,16 @@ define([
   'dojo/Evented',
   'dojo/dom',
   'dojo/dom-construct',
-  'dojo/dom-class'
+  'dojo/dom-class',
+
+  'dijit/_WidgetBase'
 ], function(
   require,
   declare, lang, arrayUtils,
   on, Deferred, Evented,
-  dom, domConstruct, domClass
+  dom, domConstruct, domClass,
+  _WidgetBase
 ) {
-  'use strict';
 
   function head(x) {
     return x[0];
@@ -55,6 +57,8 @@ define([
     }
   }
 
+  // TODO - not happy with how this pluck
+  // works. Need to play with some more
   function pluck(type, arr) {
     var targets = []
       , cleanArray = [];
@@ -75,13 +79,11 @@ define([
     console.debug('widget loaded - ', item);
   }
 
-  return declare([Evented], {
-
-    options: {},
+  return declare([_WidgetBase, Evented], {
 
     constructor: function(options) {
-      this.options = options || {};
-      this.widgets = arrayUtils.filter(this.options.widgets, function(w) {
+      this.inherited(arguments);
+      this.widgets = arrayUtils.filter(this.get('widgets'), function(w) {
         if (w.hasOwnProperty('enabled')) {
           return (w.enabled.toString() === 'true');
         } else {
@@ -98,10 +100,11 @@ define([
      * @public
      */
     startup: function() {
-      this.widgets = this._preload().array;
-      var plucked = pluck('map', this.widgets);
-      this.widgets = plucked.array;
-      arrayUtils.forEach(plucked.targets, this._loader, this);
+      var loaded = this._preload(this.get('widgets'));
+      this.set('widgets', loaded.array);
+      var plucked = pluck('map', this.get('widgets'));
+      this.set('widgets', plucked.array);
+      arrayUtils.map(plucked.targets, this._loader, this);
     },
 
     /** private methods **/
@@ -115,7 +118,7 @@ define([
     _init: function() {
       this.loaded = true;
       this.emit('widgets-loaded', {
-        widgetCount: this.widgets.length
+        widgetCount: this.get('widgets').length
       });
     },
 
@@ -131,18 +134,18 @@ define([
      */
     _loader: function(item) {
       this._widgetLoader(item).then(lang.hitch(this, function(map) {
-        var handle;
-        handle = on.once(map, 'map-ready', lang.hitch(this, function(params) {
-          handle.remove();
-          if (this.widgets.length > 0) {
-            for (var i = 0, widget; (widget = this.widgets[i]); i++) {
-              widget.options = widget.options || {};
-              lang.mixin(widget.options, params);
-              this._widgetLoader(widget).then(message);
+        this.own(
+          on.once(map, 'map-ready', lang.hitch(this, function(params) {
+            if (this.get('widgets').length > 0) {
+              for (var i = 0, widget; (widget = this.get('widgets')[i]); i++) {
+                widget.options = widget.options || {};
+                lang.mixin(widget.options, params);
+                this._widgetLoader(widget).then(message);
+              }
             }
-          }
-          this._init();
-        }));
+            this._init();
+          }))
+        );
       }));
     },
 
@@ -153,8 +156,8 @@ define([
      *
      * @private
      */
-    _preload: function() {
-      var preload = pluck('preload', this.widgets);
+    _preload: function(widgets) {
+      var preload = pluck('preload', widgets);
       for(var i = 0, item; (item = preload.targets[i]); i++) {
         item.options = item.options || {};
         lang.hitch(this, this._widgetLoader(item));
@@ -169,7 +172,8 @@ define([
      * @param {Object} widget
      */
     _widgetLoader: function(widget) {
-      lang.mixin(widget.options, this.options);
+      // TODO - not sure I need to do this mixin
+      //lang.mixin(widget.options, this.options);
       return this._requireWidget(widget);
     },
 
