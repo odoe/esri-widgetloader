@@ -28,10 +28,17 @@ define([
   }
 
   function addCss(css) {
-    return domConstruct.create('style', {
-      type: 'text/css',
-      innerHTML: css
-    }, head(document.getElementsByTagName('head')));
+    var style = dom.byId('esrijs-style');
+    if (!style) {
+      return domConstruct.create('style', {
+        id: 'esrijs-style',
+        type: 'text/css',
+        innerHTML: css
+      }, head(document.getElementsByTagName('head')));
+    } else {
+      style.innerHTML += css;
+      return style;
+    }
   }
 
   function domNode(opt) {
