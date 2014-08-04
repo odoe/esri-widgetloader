@@ -19,8 +19,19 @@ define([
 ) {
   'use strict';
 
+  function head(x) {
+    return x[0];
+  }
+
   function target(opt) {
     return opt.target || document.body;
+  }
+
+  function addCss(css) {
+    return domConstruct.create('style', {
+      type: 'text/css',
+      innerHTML: css
+    }, head(document.getElementsByTagName('head')));
   }
 
   function domNode(opt) {
@@ -170,6 +181,9 @@ define([
         if (!!widget.node) {
           node = domNode(widget);
           domConstruct.place(node, targetElem(target(widget)));
+        }
+        if (widget.css) {
+          addCss(widget.css);
         }
         w = new Widget(widget.options, node);
         deferred.resolve(w);
