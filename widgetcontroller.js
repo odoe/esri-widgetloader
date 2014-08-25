@@ -81,25 +81,24 @@ define([
 
   return declare([_WidgetBase, Evented], {
 
-    constructor: function(options) {
-      this.inherited(arguments);
-      this.widgets = arrayUtils.filter(this.get('widgets'), function(w) {
-        if (w.hasOwnProperty('enabled')) {
-          return (w.enabled.toString() === 'true');
-        } else {
-          return true;
-        }
-      });
-    },
-
     /**
-     * Mimic a regular widget with ::startup
      * Will preload any required widgets and
      * load the map widget first by default.
      *
      * @public
      */
     startup: function() {
+      // filter widgets that have been disabled
+      var widgets = arrayUtils.filter(this.get('widgets'), function(w) {
+        if (w.hasOwnProperty('enabled')) {
+          return (w.enabled.toString() === 'true');
+        } else {
+          return true;
+        }
+      });
+
+      this.set('widgets', widgets);
+
       var loaded = this._preload(this.get('widgets'));
       this.set('widgets', loaded.array);
       var plucked = pluck('map', this.get('widgets'));
