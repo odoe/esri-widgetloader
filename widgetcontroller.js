@@ -136,11 +136,18 @@ define([
         this.own(
           on.once(map, 'map-ready', lang.hitch(this, function(params) {
             if (this.get('widgets').length > 0) {
-              for (var i = 0, widget; (widget = this.get('widgets')[i]); i++) {
+              var priority = this.get('widgets').filter(function(x) { return x.priority; });
+              var others = this.get('widgets').filter(function(x) { return !x.priority; });
+              priority.map(lang.hitch(this, function(widget) {
                 widget.options = widget.options || {};
                 lang.mixin(widget.options, params);
                 this._widgetLoader(widget).then(message);
-              }
+              }));
+              others.map(lang.hitch(this, function(widget) {
+                widget.options = widget.options || {};
+                lang.mixin(widget.options, params);
+                this._widgetLoader(widget).then(message);
+              }));
             }
             this._init();
           }))
