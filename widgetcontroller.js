@@ -1,5 +1,3 @@
-/*global define */
-/*jshint laxcomma:true*/
 define([
   'require',
   'dojo/_base/declare',
@@ -60,9 +58,9 @@ define([
   // TODO - not happy with how this pluck
   // works. Need to play with some more
   function pluck(type, arr) {
-    var targets = []
-      , cleanArray = [];
-    for(var i = 0, item; (item = arr[i]); i++) {
+    var targets = [];
+    var cleanArray = [];
+    for (var i = 0, item; (item = arr[i]); i++) {
       if (item.type === type) {
         targets.push(item);
       } else {
@@ -136,8 +134,10 @@ define([
         this.own(
           on.once(map, 'map-ready', lang.hitch(this, function(params) {
             if (this.get('widgets').length > 0) {
-              var priority = this.get('widgets').filter(function(x) { return x.priority; });
-              var others = this.get('widgets').filter(function(x) { return !x.priority; });
+              var priority =
+                this.get('widgets').filter(function(x) { return x.priority; });
+              var others =
+                this.get('widgets').filter(function(x) { return !x.priority; });
               priority.map(lang.hitch(this, function(widget) {
                 widget.options = widget.options || {};
                 lang.mixin(widget.options, params);
@@ -164,7 +164,7 @@ define([
      */
     _preload: function(widgets) {
       var preload = pluck('preload', widgets);
-      for(var i = 0, item; (item = preload.targets[i]); i++) {
+      for (var i = 0, item; (item = preload.targets[i]); i++) {
         item.options = item.options || {};
         lang.hitch(this, this._widgetLoader(item));
       }
@@ -192,9 +192,7 @@ define([
     _requireWidget: function(widget) {
       var deferred = new Deferred();
       require([widget.path], function(Widget) {
-        var node
-          , handle
-          , w;
+        var node;
         if (!!widget.node) {
           node = domNode(widget);
           domConstruct.place(node, targetElem(target(widget)));
@@ -202,9 +200,9 @@ define([
         if (widget.css) {
           addCss(widget.css);
         }
-        w = new Widget(widget.options, node);
+        var w = new Widget(widget.options, node);
         deferred.resolve(w);
-        handle = on.once(w, 'load', function() {
+        var handle = on.once(w, 'load', function() {
           handle.remove();
           if (widget.nodeVisible === false) {
             domClass.add(w.domNode, 'hidden');
